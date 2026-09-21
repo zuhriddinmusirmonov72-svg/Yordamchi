@@ -224,7 +224,7 @@ export default function ChatArea({ onToggleSidebar, isSidebarOpen }: ChatAreaPro
       )}
 
       {/* Input Area */}
-      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 transition-colors">
+      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 md:p-4 transition-colors">
         <div className="max-w-4xl mx-auto">
           {selectedImage && (
             <div className="mb-3 relative inline-block">

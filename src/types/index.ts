@@ -14,6 +14,7 @@ export interface Message {
   content: string;
   timestamp: number;
   attachments?: Attachment[];
+  generatedImageUrl?: string; // for AI-generated/edited images
 }
 
 export interface Conversation {

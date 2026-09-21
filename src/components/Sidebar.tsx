@@ -16,7 +16,7 @@ export default function Sidebar({ onSettingsClick, onClose }: SidebarProps) {
   const groupedConversations = groupConversationsByDate(displayedConversations);
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen transition-colors">
+    <div className="w-[85vw] max-w-[320px] md:w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen transition-colors">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
@@ -25,7 +25,7 @@ export default function Sidebar({ onSettingsClick, onClose }: SidebarProps) {
           </h1>
           <button
             onClick={onClose}
-            className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <Menu size={20} className="text-gray-600 dark:text-gray-400" />
           </button>

@@ -7,17 +7,39 @@ import { ThemeProvider } from './context/ThemeContext'
 
 function App() {
   const [showSettings, setShowSettings] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768)
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsSidebarOpen(true)
+      } else {
+        setIsSidebarOpen(false)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   return (
     <ThemeProvider>
       <ChatProvider>
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+        <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors relative">
           {isSidebarOpen && (
-            <Sidebar 
-              onSettingsClick={() => setShowSettings(true)}
-              onClose={() => setIsSidebarOpen(false)}
-            />
+            <>
+              {/* Mobile Overlay */}
+              <div 
+                className="md:hidden fixed inset-0 bg-black/50 z-20" 
+                onClick={() => setIsSidebarOpen(false)}
+              />
+              {/* Sidebar Container */}
+              <div className="fixed md:relative z-30 h-full">
+                <Sidebar 
+                  onSettingsClick={() => setShowSettings(true)}
+                  onClose={() => setIsSidebarOpen(false)}
+                />
+              </div>
+            </>
           )}
           
           <ChatArea 

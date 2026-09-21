@@ -40,10 +40,10 @@ export default function MessageBubble({ message, onEdit, onRegenerate, isLastMes
   };
 
   return (
-    <div className={`flex items-start gap-4 mb-6 ${isUser ? 'justify-end' : ''}`}>
+    <div className={`flex items-start gap-2 md:gap-4 mb-6 ${isUser ? 'justify-end' : ''}`}>
       {!isUser && (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-nova-purple to-nova-blue flex items-center justify-center flex-shrink-0">
-          <span className="text-white font-semibold text-sm">AI</span>
+        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-nova-purple to-nova-blue flex items-center justify-center flex-shrink-0">
+          <span className="text-white font-semibold text-xs md:text-sm">AI</span>
         </div>
       )}
       
@@ -97,29 +97,57 @@ export default function MessageBubble({ message, onEdit, onRegenerate, isLastMes
                   </div>
                 ) : (
                   <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown
-                      components={{
-                        code({ node, inline, className, children, ...props }) {
-                          const match = /language-(\w+)/.exec(className || '');
-                          return !inline && match ? (
-                            <CodeBlock
-                              language={match[1]}
-                              code={String(children).replace(/\n$/, '')}
-                              theme={effectiveTheme}
-                            />
-                          ) : (
-                            <code
-                              className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-sm"
-                              {...props}
+                    {(() => {
+                      let displayContent = message.content;
+                      let imageUrl = null;
+                      const imageMatch = displayContent.match(/\[IMAGE:\s*(.+?)\]/i);
+                      
+                      if (imageMatch) {
+                        const imagePrompt = imageMatch[1];
+                        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}`;
+                        // Remove the tag from the text
+                        displayContent = displayContent.replace(imageMatch[0], '').trim();
+                      }
+
+                      return (
+                        <>
+                          {imageUrl && (
+                            <div className="mb-4">
+                              <img 
+                                src={imageUrl} 
+                                alt="AI Generated" 
+                                className="w-full max-w-sm rounded-lg shadow-md"
+                              />
+                            </div>
+                          )}
+                          {displayContent && (
+                            <ReactMarkdown
+                              components={{
+                                code({ node, inline, className, children, ...props }) {
+                                  const match = /language-(\w+)/.exec(className || '');
+                                  return !inline && match ? (
+                                    <CodeBlock
+                                      language={match[1]}
+                                      code={String(children).replace(/\n$/, '')}
+                                      theme={effectiveTheme}
+                                    />
+                                  ) : (
+                                    <code
+                                      className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-sm"
+                                      {...props}
+                                    >
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                              }}
                             >
-                              {children}
-                            </code>
-                          );
-                        },
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
+                              {displayContent}
+                            </ReactMarkdown>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
                 <div className="flex items-center justify-between mt-2">
@@ -167,8 +195,8 @@ export default function MessageBubble({ message, onEdit, onRegenerate, isLastMes
       </div>
 
       {isUser && (
-        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-          <User size={20} className="text-gray-600 dark:text-gray-400" />
+        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+          <User size={16} className="md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
         </div>
       )}
     </div>

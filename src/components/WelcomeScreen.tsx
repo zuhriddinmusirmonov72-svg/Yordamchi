@@ -29,7 +29,7 @@ export default function WelcomeScreen({ onExampleClick }: WelcomeScreenProps) {
   ];
 
   return (
-    <div className="h-full flex items-center justify-center p-8">
+    <div className="h-full flex items-center justify-center p-4 md:p-8 overflow-y-auto">
       <div className="max-w-3xl w-full">
         <div className="text-center mb-12">
           <div className="inline-block mb-4">
