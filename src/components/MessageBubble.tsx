@@ -123,9 +123,9 @@ export default function MessageBubble({ message, onEdit, onRegenerate, isLastMes
                           {displayContent && (
                             <ReactMarkdown
                               components={{
-                                code({ node, inline, className, children, ...props }) {
+                                code({ node, className, children, ...props }: any) {
                                   const match = /language-(\w+)/.exec(className || '');
-                                  return !inline && match ? (
+                                  return match ? (
                                     <CodeBlock
                                       language={match[1]}
                                       code={String(children).replace(/\n$/, '')}
