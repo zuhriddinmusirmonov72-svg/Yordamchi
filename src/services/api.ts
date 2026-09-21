@@ -8,8 +8,7 @@ export async function sendChatMessage(
   onUpdate?: (content: string) => void,
   attachments?: Attachment[]
 ): Promise<string> {
-  const savedTgUser = localStorage.getItem('tg_user');
-  const telegramId = savedTgUser ? JSON.parse(savedTgUser).id : undefined;
+
 
   const response = await fetch(`${API_BASE_URL}/chat`, {
     method: 'POST',
@@ -19,8 +18,7 @@ export async function sendChatMessage(
     body: JSON.stringify({
       message,
       history: history.slice(-10), // Keep last 10 messages for context
-      attachments: attachments || [],
-      telegramId
+      attachments: attachments || []
     }),
   });
 

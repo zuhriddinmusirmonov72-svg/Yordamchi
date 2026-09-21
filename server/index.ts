@@ -35,30 +35,16 @@ interface ChatRequest {
   message: string;
   history: Message[];
   attachments?: Attachment[];
-  telegramId?: number;
 }
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, history, attachments, telegramId }: ChatRequest = req.body;
+    const { message, history, attachments }: ChatRequest = req.body;
 
     if (!message && (!attachments || attachments.length === 0)) {
       return res.status(400).json({ error: 'Message or attachment is required' });
     }
 
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const channel = process.env.TELEGRAM_CHANNEL;
-
-    if (token && channel) {
-      if (!telegramId) {
-        return res.status(403).json({ error: 'SUBSCRIPTION_REQUIRED' });
-      }
-      const tgRes = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${channel}&user_id=${telegramId}`);
-      const tgData: any = await tgRes.json();
-      if (!tgData.ok || !['creator', 'administrator', 'member'].includes(tgData.result.status)) {
-        return res.status(403).json({ error: 'SUBSCRIPTION_REQUIRED' });
-      }
-    }
 
     const systemInstruction = `You are NovaAI, a helpful, intelligent, and friendly AI assistant. Follow these guidelines:
 
@@ -197,121 +183,7 @@ Remember: You're having a conversation, not answering isolated questions. Build 
   }
 });
 
-// --- Persistent Telegram Users Map ---
-const TG_USERS_FILE = path.join(process.cwd(), 'server', 'tg_users.json');
 
-// Load saved users from file on startup
-const loadTelegramUsers = (): Map<string, number> => {
-  try {
-    if (fs.existsSync(TG_USERS_FILE)) {
-      const raw = fs.readFileSync(TG_USERS_FILE, 'utf-8');
-      const obj = JSON.parse(raw);
-      const map = new Map<string, number>(Object.entries(obj).map(([k, v]) => [k, v as number]));
-      console.log(`✅ Loaded ${map.size} Telegram users from file.`);
-      return map;
-    }
-  } catch (e) {
-    console.error('Failed to load tg_users.json:', e);
-  }
-  return new Map();
-};
-
-const saveTelegramUsers = (map: Map<string, number>) => {
-  try {
-    const obj = Object.fromEntries(map);
-    fs.writeFileSync(TG_USERS_FILE, JSON.stringify(obj, null, 2), 'utf-8');
-  } catch (e) {
-    console.error('Failed to save tg_users.json:', e);
-  }
-};
-
-const telegramUsersMap = loadTelegramUsers();
-
-// Telegram Bot Polling to resolve usernames to IDs
-const startTelegramPolling = () => {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return;
-
-  let lastUpdateId = 0;
-  
-  const poll = async () => {
-    try {
-      const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`);
-      const data: any = await res.json();
-      
-      if (data.ok && data.result.length > 0) {
-        for (const update of data.result) {
-          lastUpdateId = update.update_id;
-          
-          const message = update.message || update.callback_query?.message;
-          if (message && message.from) {
-            const user = message.from;
-            if (user.username) {
-              const usernameLower = user.username.toLowerCase();
-              if (!telegramUsersMap.has(usernameLower)) {
-                telegramUsersMap.set(usernameLower, user.id);
-                saveTelegramUsers(telegramUsersMap);
-                console.log(`✅ Saved new user: @${usernameLower} -> ID ${user.id}`);
-              }
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Telegram polling error:', e);
-    }
-    setTimeout(poll, 1000);
-  };
-  
-  poll();
-};
-
-startTelegramPolling();
-
-app.post('/api/check-subscription', async (req, res) => {
-  try {
-    const { telegramId, username } = req.body;
-    
-    let resolvedId = telegramId;
-
-    if (!resolvedId && username) {
-      // Clean username
-      const cleanUsername = username.replace('@', '').toLowerCase();
-      resolvedId = telegramUsersMap.get(cleanUsername);
-      if (!resolvedId) {
-         return res.status(400).json({ 
-           error: `Botingizga kirmagansiz! Avval Telegramga kirib @InstagramtgNakrutka_bot ga /start bosing, so'ngra bu yerda tekshiring.` 
-         });
-      }
-    }
-
-    if (!resolvedId) {
-      return res.status(400).json({ error: 'Telegram ID yoki Username kiritilishi shart' });
-    }
-
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const channel = process.env.TELEGRAM_CHANNEL;
-
-    if (!token || !channel) {
-      return res.json({ isSubscribed: true }); 
-    }
-
-    const response = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${channel}&user_id=${resolvedId}`);
-    const data: any = await response.json();
-
-    if (!data.ok) {
-      return res.json({ isSubscribed: false, resolvedId });
-    }
-
-    const status = data.result.status;
-    const isSubscribed = ['creator', 'administrator', 'member'].includes(status);
-
-    res.json({ isSubscribed, resolvedId });
-  } catch (error: any) {
-    console.error('Subscription check error:', error);
-    res.status(500).json({ error: 'Failed to check subscription' });
-  }
-});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', model: modelName, provider: 'OpenRouter' });

@@ -6,7 +6,6 @@ import MessageList from './MessageList';
 import { sendChatMessage } from '../services/api';
 import { generateId } from '../utils/helpers';
 import { Message, Attachment } from '../types';
-import TelegramSubscriptionModal from './TelegramSubscriptionModal';
 
 interface ChatAreaProps {
   onToggleSidebar: () => void;
@@ -20,17 +19,8 @@ export default function ChatArea({ onToggleSidebar, isSidebarOpen }: ChatAreaPro
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
-  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Check subscription on initial load
-  useEffect(() => {
-    const tgUser = localStorage.getItem('tg_user');
-    if (!tgUser) {
-      setShowSubscriptionModal(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -77,13 +67,7 @@ export default function ChatArea({ onToggleSidebar, isSidebarOpen }: ChatAreaPro
         updateLastMessage(partialResponse);
       }, attachments);
     } catch (err: any) {
-      if (err.message === 'SUBSCRIPTION_REQUIRED') {
-        setShowSubscriptionModal(true);
-        // Remove the empty assistant message since it failed
-        // Wait for next PR to add removeMessage if needed, for now just show modal.
-      } else {
-        setError(err.message);
-      }
+      setError(err.message);
       console.error('Chat error:', err);
     } finally {
       setIsLoading(false);
@@ -278,9 +262,6 @@ export default function ChatArea({ onToggleSidebar, isSidebarOpen }: ChatAreaPro
         </div>
       </div>
 
-      {showSubscriptionModal && (
-        <TelegramSubscriptionModal onVerified={() => setShowSubscriptionModal(false)} />
-      )}
     </div>
   );
 }
