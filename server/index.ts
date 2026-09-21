@@ -54,7 +54,7 @@ app.post('/api/chat', async (req, res) => {
         return res.status(403).json({ error: 'SUBSCRIPTION_REQUIRED' });
       }
       const tgRes = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${channel}&user_id=${telegramId}`);
-      const tgData = await tgRes.json();
+      const tgData: any = await tgRes.json();
       if (!tgData.ok || !['creator', 'administrator', 'member'].includes(tgData.result.status)) {
         return res.status(403).json({ error: 'SUBSCRIPTION_REQUIRED' });
       }
@@ -237,7 +237,7 @@ const startTelegramPolling = () => {
   const poll = async () => {
     try {
       const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`);
-      const data = await res.json();
+      const data: any = await res.json();
       
       if (data.ok && data.result.length > 0) {
         for (const update of data.result) {
@@ -297,7 +297,7 @@ app.post('/api/check-subscription', async (req, res) => {
     }
 
     const response = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${channel}&user_id=${resolvedId}`);
-    const data = await response.json();
+    const data: any = await response.json();
 
     if (!data.ok) {
       return res.json({ isSubscribed: false, resolvedId });
