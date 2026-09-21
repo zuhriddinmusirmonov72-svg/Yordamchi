@@ -44,7 +44,8 @@ export default function TelegramSubscriptionModal({ onVerified }: Props) {
     setIsLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/check-subscription', {
+      const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
+      const res = await fetch(`${API_URL}/check-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegramId: user.id, username: user.username })
